@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -44,8 +45,14 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import androidx.navigation.NavHostController
 import com.nameisjayant.noteapp.R
+import com.nameisjayant.noteapp.common.LoadingDialog
 import com.nameisjayant.noteapp.common.base.NoteState
+import com.nameisjayant.noteapp.common.showToast
 import com.nameisjayant.noteapp.data.local.models.Notes
+import com.nameisjayant.noteapp.features.notes.navigation.Update_Notes
+import com.nameisjayant.noteapp.features.notes.ui.viewmodel.NoteEvents
+import com.nameisjayant.noteapp.ui.theme.Purple500
+import kotlinx.coroutines.flow.collectLatest
 
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -54,12 +61,37 @@ fun ShowNotesScreen(
     navHostController: NavHostController,
     viewModel: NoteViewModel = hiltViewModel()
 ) {
+
+    var isLoading by remember { mutableStateOf(false) }
+    val context = LocalContext.current
+
+    if (isLoading) LoadingDialog()
+
+    LaunchedEffect(key1 = true) {
+        viewModel.deleteNoteEventFlow.collectLatest {
+            isLoading = when (it) {
+                is NoteState.Success -> {
+                    context.showToast(it.data)
+                    false
+                }
+                is NoteState.Failure -> {
+                    context.showToast(it.msg)
+                    false
+                }
+                NoteState.Loading -> true
+            }
+        }
+    }
+
     val response = viewModel.notes.value
     Scaffold(
         floatingActionButton = {
-            FloatingActionButton(onClick = {
-                navHostController.navigate(Add_Notes)
-            }) {
+            FloatingActionButton(
+                onClick = {
+                    navHostController.navigate(Add_Notes)
+                },
+                backgroundColor = Color.Blue,
+            ) {
                 Icon(Icons.Default.Add, contentDescription = "", tint = Color.White)
             }
         }
@@ -69,11 +101,39 @@ fun ShowNotesScreen(
                 .fillMaxSize()
                 .background(Background)
         ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Purple500)
+            ) {
+                Row(
+                    modifier = Modifier.padding(start = 20.dp, top = 50.dp, bottom = 15.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.all_notes),
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        modifier = Modifier
+                            .align(CenterVertically)
+                    )
+                }
+            }
             when (response) {
                 is NoteState.Success -> {
-                    LazyColumn {
+                    LazyColumn(
+                        modifier = Modifier.padding(top = 90.dp)
+                    ) {
                         items(response.data, key = { it.noteId!! }) {
-                            NoteEachRow(data = it)
+                            NoteEachRow(data = it, onEdit = {
+                                navHostController.currentBackStackEntry?.savedStateHandle?.set(
+                                    "data",
+                                    it
+                                )
+                                navHostController.navigate(Update_Notes)
+                            }) {
+                                viewModel.onEvent(NoteEvents.DeleteNoteEvent(it))
+                            }
                         }
                     }
                 }

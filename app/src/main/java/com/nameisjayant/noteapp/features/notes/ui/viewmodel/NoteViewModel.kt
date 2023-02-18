@@ -11,6 +11,7 @@ import com.nameisjayant.noteapp.features.notes.domain.repository.NoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,6 +24,12 @@ class NoteViewModel @Inject constructor(
 
     private val _noteAddedEventFlow: MutableSharedFlow<NoteState<String>> = MutableSharedFlow()
     val noteAddedEventFlow = _noteAddedEventFlow.asSharedFlow()
+
+    private val _deleteNoteEventFlow: MutableSharedFlow<NoteState<String>> = MutableSharedFlow()
+    val deleteNoteEventFlow = _deleteNoteEventFlow.asSharedFlow()
+
+    private val _updateNoteEventFlow: MutableSharedFlow<NoteState<String>> = MutableSharedFlow()
+    val updateNoteEventFlow = _updateNoteEventFlow.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -45,7 +52,7 @@ class NoteViewModel @Inject constructor(
                     try {
                         repository.addNote(events.notes)
                         _noteAddedEventFlow.emit(NoteState.Success("Note Added"))
-                    } catch (e: java.lang.Exception) {
+                    } catch (e: Exception) {
                         _noteAddedEventFlow.emit(
                             NoteState.Failure(
                                 e.message ?: "Something went wrong!"
@@ -53,6 +60,36 @@ class NoteViewModel @Inject constructor(
                         )
                     }
 
+                }
+            }
+            is NoteEvents.DeleteNoteEvent -> {
+                viewModelScope.launch {
+                    _deleteNoteEventFlow.emit(NoteState.Loading)
+                    try {
+                        repository.deleteNote(events.note)
+                        _deleteNoteEventFlow.emit(NoteState.Success("Note Deleted!"))
+                    } catch (e: Exception) {
+                        _deleteNoteEventFlow.emit(
+                            NoteState.Failure(
+                                e.message ?: "Something went wrong!!"
+                            )
+                        )
+                    }
+                }
+            }
+            is NoteEvents.UpdateNoteEvent -> {
+                viewModelScope.launch {
+                    _updateNoteEventFlow.emit(NoteState.Loading)
+                    try {
+                        repository.updateNote(events.note)
+                        _updateNoteEventFlow.emit(NoteState.Success("Note Updated!"))
+                    } catch (e: Exception) {
+                        _updateNoteEventFlow.emit(
+                            NoteState.Failure(
+                                e.message ?: "Something went wrong!!"
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -64,5 +101,8 @@ class NoteViewModel @Inject constructor(
 sealed class NoteEvents {
 
     data class NoteAddEvent(val notes: Notes) : NoteEvents()
+    data class DeleteNoteEvent(val note: Notes) : NoteEvents()
+
+    data class UpdateNoteEvent(val note: Notes) : NoteEvents()
 
 }

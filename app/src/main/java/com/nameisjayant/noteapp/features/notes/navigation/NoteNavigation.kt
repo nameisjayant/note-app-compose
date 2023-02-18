@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.nameisjayant.noteapp.features.notes.ui.screens.AddNoteScreen
 import com.nameisjayant.noteapp.features.notes.ui.screens.ShowNotesScreen
+import com.nameisjayant.noteapp.features.notes.ui.screens.UpdateNoteScreen
 
 
 @Composable
@@ -20,7 +21,11 @@ fun NoteNavigation() {
         composable(Add_Notes) {
             AddNoteScreen(navHostController)
         }
+        composable(Update_Notes){
+            UpdateNoteScreen(navHostController = navHostController)
+        }
     }
+    
 
 }
 

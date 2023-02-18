@@ -3,10 +3,7 @@ package com.nameisjayant.noteapp.features.notes.ui.screens
 import android.annotation.SuppressLint
 import android.text.TextUtils
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -21,6 +18,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -33,6 +31,8 @@ import com.nameisjayant.noteapp.common.showToast
 import com.nameisjayant.noteapp.data.local.models.Notes
 import com.nameisjayant.noteapp.features.notes.ui.viewmodel.NoteEvents
 import com.nameisjayant.noteapp.features.notes.ui.viewmodel.NoteViewModel
+import com.nameisjayant.noteapp.ui.theme.Background
+import com.nameisjayant.noteapp.ui.theme.Purple500
 import kotlinx.coroutines.flow.collectLatest
 
 
@@ -72,23 +72,6 @@ fun AddNoteScreen(
     }
 
     Scaffold(
-        topBar = {
-            TopAppBar {
-                IconButton(onClick = {
-                    context.finish()
-                }) {
-                    Icon(Icons.Rounded.ArrowBack, contentDescription = "")
-                }
-                Text(
-                    text = stringResource(id = R.string.add_task),
-                    color = Color.White,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .align(CenterVertically)
-                )
-            }
-        },
         floatingActionButton = {
             if (!TextUtils.isEmpty(title) && !TextUtils.isEmpty(task))
                 FloatingActionButton(
@@ -112,10 +95,34 @@ fun AddNoteScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.LightGray)
+                .background(Background)
 
         ) {
             Column {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(Purple500)
+                ) {
+                    Row(
+                            modifier = Modifier.padding(start = 10.dp, top = 40.dp, bottom = 10.dp)
+                    ) {
+                        IconButton(onClick = {
+                            navHostController.navigateUp()
+                        }) {
+                            Icon(Icons.Rounded.ArrowBack, contentDescription = "", tint = Color.White)
+                        }
+                        Text(
+                            text = stringResource(id = R.string.add_task),
+                            color = Color.White,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .align(CenterVertically)
+                        )
+                    }
+                }
+
                 CommonTextField(
                     text = title,
                     label = stringResource(id = R.string.enter_title),

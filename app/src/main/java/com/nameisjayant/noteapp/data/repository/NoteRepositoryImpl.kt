@@ -18,4 +18,6 @@ class NoteRepositoryImpl @Inject constructor(
     }
 
     override fun getAllNotes(): Flow<List<Notes>> = noteDao.getAllNotes()
+    override suspend fun deleteNote(note: Notes) = noteDao.deleteNote(note)
+    override suspend fun updateNote(note: Notes) = noteDao.updateNote(note)
 }

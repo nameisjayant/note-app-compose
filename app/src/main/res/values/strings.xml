@@ -5,4 +5,6 @@
     <string name="add_task">Add Note</string>
     <string name="delete">Delete</string>
     <string name="edit">Edit</string>
+    <string name="all_notes">All Notes</string>
+    <string name="edit_note">Edit Note</string>
 </resources>
