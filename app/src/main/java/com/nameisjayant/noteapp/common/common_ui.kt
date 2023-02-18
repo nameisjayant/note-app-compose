@@ -69,6 +69,7 @@ fun CommonTextField(
             focusedIndicatorColor = color,
             backgroundColor = Color.Transparent,
             unfocusedIndicatorColor = color,
+            textColor = Color.Black
         ),
         keyboardOptions = KeyboardOptions(imeAction = imeAction, keyboardType = keyboardType),
         keyboardActions = KeyboardActions {

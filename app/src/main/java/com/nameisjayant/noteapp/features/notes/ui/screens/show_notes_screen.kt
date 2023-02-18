@@ -268,7 +268,8 @@ fun PopUpDialog(
                             )
                             Text(
                                 text = stringResource(R.string.edit),
-                                modifier = Modifier.padding(horizontal = 8.dp)
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                color = Color.Black
                             )
                         }
                         Row(modifier = Modifier
@@ -284,7 +285,8 @@ fun PopUpDialog(
                             )
                             Text(
                                 text = stringResource(R.string.delete),
-                                modifier = Modifier.padding(horizontal = 8.dp)
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                color = Color.Black
                             )
                         }
                     }
