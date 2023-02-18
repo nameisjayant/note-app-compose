@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.text.TextUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -23,15 +24,15 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.nameisjayant.noteapp.R
-import com.nameisjayant.noteapp.common.CommonTextField
-import com.nameisjayant.noteapp.common.LoadingDialog
+import com.nameisjayant.noteapp.common.*
 import com.nameisjayant.noteapp.common.base.NoteState
-import com.nameisjayant.noteapp.common.getActivity
-import com.nameisjayant.noteapp.common.showToast
 import com.nameisjayant.noteapp.data.local.models.Notes
+import com.nameisjayant.noteapp.data.local.models.categoryList
 import com.nameisjayant.noteapp.features.notes.ui.viewmodel.NoteEvents
 import com.nameisjayant.noteapp.features.notes.ui.viewmodel.NoteViewModel
+import com.nameisjayant.noteapp.ui.theme.Background
 import com.nameisjayant.noteapp.ui.theme.Purple500
+import com.nameisjayant.noteapp.ui.theme.Teal200
 import kotlinx.coroutines.flow.collectLatest
 
 
@@ -45,13 +46,18 @@ fun UpdateNoteScreen(
     val note =
         navHostController.previousBackStackEntry?.savedStateHandle?.get<Notes>("data") ?: Notes(
             "",
-            ""
+            "",
+            "", 0
         )
 
     var title by remember { mutableStateOf(note.title) }
     var task by remember { mutableStateOf(note.description) }
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current.getActivity()!!
+    var currentCategoryState by remember { mutableStateOf(note.category) }
+    var currentColor by remember { mutableStateOf(note.color) }
+    var currentId by remember { mutableStateOf(categoryList[0].id) }
+
 
     var isLoading by remember { mutableStateOf(false) }
 
@@ -82,9 +88,11 @@ fun UpdateNoteScreen(
                     onClick = {
                         viewModel.onEvent(
                             NoteEvents.UpdateNoteEvent(
-                               note.copy(
+                                note.copy(
                                     title = title,
-                                    description = task
+                                    description = task,
+                                    category = currentCategoryState,
+                                    color = currentColor
                                 )
                             )
                         )
@@ -102,7 +110,7 @@ fun UpdateNoteScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.LightGray)
+                .background(Background)
 
         ) {
             Column {
@@ -134,29 +142,64 @@ fun UpdateNoteScreen(
                     }
                 }
 
-                CommonTextField(
-                    text = title,
-                    label = stringResource(id = R.string.enter_title),
-                    modifier = Modifier.fillMaxWidth(),
-                    onNext = {
-                        focusManager.moveFocus(FocusDirection.Down)
-                    }
-                ) {
-                    title = it
 
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                ) {
+                    categoryList.forEach {
+                        AppRadioButton(
+                            category = it,
+                            selected = it.title == currentCategoryState,
+                            onValueChange = { data ->
+                                currentCategoryState = data.title
+                                currentColor = data.id
+                                currentId = data.id
+
+                            }
+                        )
+                    }
                 }
 
-                CommonTextField(
-                    text = task,
-                    label = stringResource(id = R.string.write_task),
-                    modifier = Modifier.fillMaxSize(),
-                    imeAction = ImeAction.Default,
-                    onNext = {
-                        focusManager.moveFocus(FocusDirection.Right)
-                    }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            if (currentColor == 1) Color.Red.copy(alpha = 0.4f) else if (currentColor == 2) Teal200.copy(
+                                alpha = 0.4f
+                            ) else if (currentColor == 3) Color.Green.copy(alpha = 0.4f) else Color.White
+                        )
                 ) {
-                    task = it
+                    LazyColumn {
+                        item {
+                            CommonTextField(
+                                text = title,
+                                label = stringResource(id = R.string.enter_title),
+                                modifier = Modifier.fillMaxWidth(),
+                                onNext = {
+                                    focusManager.moveFocus(FocusDirection.Down)
+                                }
+                            ) {
+                                title = it
 
+                            }
+
+                            CommonTextField(
+                                text = task,
+                                label = stringResource(id = R.string.write_task),
+                                modifier = Modifier.fillMaxSize(),
+                                imeAction = ImeAction.Default,
+                                onNext = {
+                                    focusManager.moveFocus(FocusDirection.Right)
+                                }
+                            ) {
+                                task = it
+
+                            }
+                        }
+                    }
                 }
             }
         }

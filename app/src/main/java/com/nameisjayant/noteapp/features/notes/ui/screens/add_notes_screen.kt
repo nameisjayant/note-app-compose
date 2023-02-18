@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.text.TextUtils
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowBack
@@ -11,6 +13,7 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment.Companion.CenterVertically
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -23,12 +26,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.nameisjayant.noteapp.R
-import com.nameisjayant.noteapp.common.CommonTextField
-import com.nameisjayant.noteapp.common.LoadingDialog
+import com.nameisjayant.noteapp.common.*
 import com.nameisjayant.noteapp.common.base.NoteState
-import com.nameisjayant.noteapp.common.getActivity
-import com.nameisjayant.noteapp.common.showToast
 import com.nameisjayant.noteapp.data.local.models.Notes
+import com.nameisjayant.noteapp.data.local.models.categoryList
 import com.nameisjayant.noteapp.features.notes.ui.viewmodel.NoteEvents
 import com.nameisjayant.noteapp.features.notes.ui.viewmodel.NoteViewModel
 import com.nameisjayant.noteapp.ui.theme.Background
@@ -47,6 +48,9 @@ fun AddNoteScreen(
     var task by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current.getActivity()!!
+    var currentCategoryState by remember { mutableStateOf(categoryList[0].title) }
+    var currentColor by remember { mutableStateOf(categoryList[0].color) }
+    var currentId by remember { mutableStateOf(categoryList[0].id) }
 
     var isLoading by remember { mutableStateOf(false) }
 
@@ -78,7 +82,7 @@ fun AddNoteScreen(
                     onClick = {
                         viewModel.onEvent(
                             NoteEvents.NoteAddEvent(
-                                Notes(title, task)
+                                Notes(title, task, currentCategoryState, currentId)
                             )
                         )
                     },
@@ -105,12 +109,16 @@ fun AddNoteScreen(
                         .background(Purple500)
                 ) {
                     Row(
-                            modifier = Modifier.padding(start = 10.dp, top = 40.dp, bottom = 10.dp)
+                        modifier = Modifier.padding(start = 10.dp, top = 40.dp, bottom = 10.dp)
                     ) {
                         IconButton(onClick = {
                             navHostController.navigateUp()
                         }) {
-                            Icon(Icons.Rounded.ArrowBack, contentDescription = "", tint = Color.White)
+                            Icon(
+                                Icons.Rounded.ArrowBack,
+                                contentDescription = "",
+                                tint = Color.White
+                            )
                         }
                         Text(
                             text = stringResource(id = R.string.add_task),
@@ -123,30 +131,65 @@ fun AddNoteScreen(
                     }
                 }
 
-                CommonTextField(
-                    text = title,
-                    label = stringResource(id = R.string.enter_title),
-                    modifier = Modifier.fillMaxWidth(),
-                    onNext = {
-                        focusManager.moveFocus(FocusDirection.Down)
-                    }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 10.dp, vertical = 20.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
                 ) {
-                    title = it
+                    categoryList.forEach {
+                        AppRadioButton(
+                            category = it,
+                            selected = it.title == currentCategoryState,
+                            onValueChange = { data ->
+                                currentCategoryState = data.title
+                                currentColor = data.color
+                                currentId = data.id
 
+                            }
+                        )
+                    }
                 }
 
-                CommonTextField(
-                    text = task,
-                    label = stringResource(id = R.string.write_task),
-                    modifier = Modifier.fillMaxSize(),
-                    imeAction = ImeAction.Default,
-                    onNext = {
-                        focusManager.moveFocus(FocusDirection.Right)
-                    }
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                        .background(currentColor.copy(alpha = 0.4f))
                 ) {
-                    task = it
+                    LazyColumn {
+                        item {
+                            CommonTextField(
+                                text = title,
+                                label = stringResource(id = R.string.enter_title),
+                                modifier = Modifier.fillMaxWidth(),
+                                onNext = {
+                                    focusManager.moveFocus(FocusDirection.Down)
+                                }
+                            ) {
+                                title = it
 
+                            }
+
+                        }
+
+                        item {
+                            CommonTextField(
+                                text = task,
+                                label = stringResource(id = R.string.write_task),
+                                modifier = Modifier.fillMaxSize(),
+                                imeAction = ImeAction.Default,
+                                onNext = {
+                                    focusManager.moveFocus(FocusDirection.Right)
+                                }
+                            ) {
+                                task = it
+
+                            }
+                        }
+                    }
                 }
+
             }
         }
     }
@@ -155,3 +198,5 @@ fun AddNoteScreen(
         LoadingDialog()
 
 }
+
+

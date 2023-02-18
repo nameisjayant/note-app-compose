@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.nameisjayant.noteapp.data.local.models.Category
 
 
 @SuppressLint("UnnecessaryComposedModifier")
@@ -148,3 +149,28 @@ fun Context.showToast(
     msg: String,
     duration: Int = Toast.LENGTH_SHORT
 ) = Toast.makeText(this, msg, duration).show()
+
+@Composable
+fun AppRadioButton(
+    category: Category,
+    selected: Boolean,
+    onValueChange: (Category) -> Unit
+) {
+
+    Row {
+        RadioButton(selected = selected, onClick = { onValueChange(category) },
+            colors = RadioButtonDefaults.colors(
+                selectedColor = category.color
+            )
+        )
+        Text(
+            text = category.title, style = TextStyle(
+                color = category.color.copy(alpha = 0.8f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.W400
+            ),
+            modifier = Modifier.align(CenterVertically)
+        )
+    }
+
+}
